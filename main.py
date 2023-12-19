@@ -6,67 +6,17 @@ print("Starting the chessboard arduino project so cool")
 print("using 2048 hash (memory) and 18 depth")
 stockfish = Stockfish(depth=18, parameters={"Hash": 2048})
 
+# global BYTE = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+cboard = chess.Board()
+# board = pyfirmata.Arduino('/dev/ttyACM0')
 
-
-board = pyfirmata.Arduino('/dev/ttyACM0')
-
-# ex_byte = [0, 0, 0, 0, 0, 0, 0, 0]
+# ex_byte = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 #Setup pins for communication with a 74HC595 shift register
-latchPinA = 8
-clockPinA = 12
-dataPinA = 11
+latchPin = 8
+clockPin = 12
+dataPin = 11
 
-latchPin1 = 8
-clockPin1 = 12
-dataPin1 = 11
-
-
-
-# SHIFT REGISTER CONTROLLING
-def updateShiftRegisterA(byte): 
-   board.digital[latchPinA].write(0)
-   for i in byte: 
-       board.digital[dataPinA].write(i)
-       board.digital[clockPinA].write(1)
-       board.digital[clockPinA].write(0)
-   board.digital[latchPinA].write(1)
-
-def updateShiftRegister1(byte): 
-   board.digital[latchPinA].write(0)
-   for i in byte: 
-       board.digital[dataPinA].write(i)
-       board.digital[clockPinA].write(1)
-       board.digital[clockPinA].write(0)
-   board.digital[latchPinA].write(1)
-
-# Turns on a specified led on the first shift register which controls the horizontal leds on the chessboard
-def ledOnShiftregister_A(led_number):
-    led_number = led_number - 1
-    byte = [0, 0, 0, 0, 0, 0, 0, 0]
-    byte[led_number] = 1
-    updateShiftRegisterA(byte)
-    
-def AllLedOffShiftregister_A():
-    byte = [0, 0, 0, 0, 0, 0, 0, 0]
-    updateShiftRegisterA(byte)
-    
-def ledOnShiftregister_1(led_number):
-    led_number = led_number - 1
-    byte = [0, 0, 0, 0, 0, 0, 0, 0]
-    byte[led_number] = 1
-    updateShiftRegister1(byte)
-    
-def AllLedOffShiftregister_1():
-    byte = [0, 0, 0, 0, 0, 0, 0, 0]
-    updateShiftRegister1(byte)
-    
-    
-    
-# GAME LOGIC
-def askformove():
-    nextinputmove = input("your move: ")
-    return nextinputmove
 
 def main():
     # Startup
@@ -75,12 +25,10 @@ def main():
     stockfish.set_elo_rating(wantedelo)
     wantedskillrating = int(input("Stockfish skill level (difficulty) : "))
     stockfish.set_skill_level(wantedskillrating)
-    print("You are playing white")
+    print("You are playing as whitei")
     print("--------------------------------------------------------")
-    print("Moves should be inputted in the format 'a1b2' ")
-    print("\n")
-    
-    
+    print("Moves should be inputted in the format 'a1b2' \n")
+
     # Game loop
     loop = True
     while loop == True:
@@ -94,6 +42,7 @@ def main():
             else:
                 print("Move incorrect try again.")
         
+        stockfish.make_moves_from_current_position({nextmove})
         print(stockfish.get_board_visual())
         print("Calculating best move")
         bestmove = stockfish.get_best_move()
@@ -101,19 +50,56 @@ def main():
         print("done")
         bestmove = ""
         nextmove = ""
-        
-        # TODO: MAKE BETTER WIN AND STALEMATE CONDITION could do something with evaluation
-        cangamecontinue=stockfish.is_fen_valid(stockfish.get_fen_position())
-        cboard = chess.Board()
-        cboard.set_fen(stockfish.get_fen_position)
-        if cboard.is_checkmate():
-            print("Checkmate!!!!! well played.")
-            loop = False
-        elif cboard.is_stalemate():
-            print("Stalemate!!!! its a tie.")
-            loop = False
-        if cangamecontinue == False:
-            print("some other wierd stuff happened, the game is over but its not checkmate nor stalemate.")
+
+
+        if canGameContinue() == False:
             loop = False
 
-main()
+# Shift register help functions
+def updateShiftRegister(byte): 
+   board.digital[latchPin].write(0)
+   for i in byte: 
+       board.digital[dataPin].write(i)
+       board.digital[clockPin].write(1)
+       board.digital[clockPin].write(0)
+   board.digital[latchPin].write(1)
+
+def turnOn2LedsByte(numA,num1):
+    numA = numA - 1 
+    num1 = num1 - 1 
+    byte = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    byte[numA] = 1
+    byte[num1] = 1
+    updateShiftRegister(byte)
+
+# Turns on a specified led on the first shift register which controls the leds vamos
+def ledOnShiftregister(led_number):
+    led_number = led_number - 1
+    byte = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    byte[led_number] = 1
+    updateShiftRegister(byte)
+
+# GAME LOGIC
+def askformove():
+    nextinputmove = input("your move: ")
+    return nextinputmove
+
+def canGameContinue():
+    fenpos = stockfish.get_fen_position()
+    cangamecontinue=stockfish.is_fen_valid(fenpos)
+    cboard.set_fen(fenpos)
+    
+    if cboard.is_checkmate():
+        print("Checkmate!!!!! well played.")
+        return False
+    elif cboard.is_stalemate():
+        print("Stalemate!!!! its a tie.")
+        return False
+    elif cangamecontinue == False:
+        print("some other wierd stuff happened, the game is over but its not checkmate nor stalemate.")
+        return False
+    else:
+        return True
+
+if __name__ == "__main__":
+    main() 
