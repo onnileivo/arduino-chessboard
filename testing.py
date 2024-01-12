@@ -35,5 +35,5 @@ def main():
         bestmove_list.append(stockfish.get_best_move())
         stockfish.make_moves_from_current_position(bestmove_list)
 
-        if canGameContinue() is False:
+        if canGameContinue(stockfish.get_fen_position()) is False:
             loop = False

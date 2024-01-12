@@ -8,7 +8,6 @@ cboard = chess.Board()
 def main():
     gamemode = input("Are you playing on board or not? (y/n): ")
     if gamemode == "n":
-        # testing
         import testing
 
         testing.main()
