@@ -33,8 +33,10 @@ def main():
     print("--------------------------------------------------------")
     print("Moves should be inputted in the format 'a1b2' \n")
 
+    playStartAnimation()
     # Game loop
     loop = True
+
     while loop is True:
         print(stockfish.get_board_visual())
         bestmove_list = []
@@ -57,6 +59,7 @@ def main():
         showMoveLeds(bestmove)
 
         if canGameContinue(stockfish.get_fen_position()) is False:
+            print(stockfish.get_board_visual())
             loop = False
 
 
@@ -79,6 +82,7 @@ def turnOn2LedsByte(numA, num1):
     updateShiftRegister(byte)
 
 
+# function that turns on the leds according to the move
 def showMoveLeds(move):
     emptybyte = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     movelist = list(move)
@@ -100,3 +104,10 @@ def showMoveLeds(move):
     time.sleep(0.5)
     turnOn2LedsByte(m2p1, m2p2)
     time.sleep(1)
+
+
+def playStartAnimation():
+    for i in range(512):
+        byte = list("{0:016b}".format(i))  # converts number to byte
+        updateShiftRegister(byte)
+        time.sleep(0.03)

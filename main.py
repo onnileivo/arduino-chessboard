@@ -1,20 +1,24 @@
 import chess
 
-
-print("Starting the chessboard arduino project so cool")
 cboard = chess.Board()
 
 
 def main():
-    gamemode = input("Are you playing on board or not? (y/n): ")
-    if gamemode == "n":
-        import testing
+    askModeLoop = True
+    while askModeLoop:
+        gamemode = input("Are you playing on a board or not? (y/n): ")
+        if gamemode == "n":
+            askModeLoop = False
+            import testing
 
-        testing.main()
-    elif gamemode == "y":
-        import board
+            testing.main()
+        elif gamemode == "y":
+            askModeLoop = False
+            import board
 
-        board.main()
+            board.main()
+        else:
+            print("not a valid mode try again \n")
 
 
 # GAME LOGIC

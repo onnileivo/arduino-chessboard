@@ -36,4 +36,5 @@ def main():
         stockfish.make_moves_from_current_position(bestmove_list)
 
         if canGameContinue(stockfish.get_fen_position()) is False:
+            print(stockfish.get_board_visual())
             loop = False
